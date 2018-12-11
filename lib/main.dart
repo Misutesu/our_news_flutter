@@ -45,7 +45,10 @@ class _TabWidgetState extends State<TabWidget> {
               title: new Text(title),
               actions: <Widget>[
                 new IconButton(
-                  icon: const Icon(Icons.search,color: Colors.white,),
+                  icon: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
                   tooltip: 'Search',
                   onPressed: null,
                 )
@@ -66,11 +69,7 @@ class _TabWidgetState extends State<TabWidget> {
                   child: new Text("Test"),
                 );
               } else {
-                return new TypeWidget();
-//                return new Padding(
-//                  padding: const EdgeInsets.all(16.0),
-//                  child: new Text("Test1"),
-//                );
+                return new TypeWidget(tabData.type);
               }
             }).toList()),
           )),
