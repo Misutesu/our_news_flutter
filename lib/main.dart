@@ -61,6 +61,10 @@ class _TabWidgetState extends State<TabWidget> {
                     );
                   }).toList()),
             ),
+            drawer: new Drawer(
+              child: null,
+              elevation: 6,
+            ),
             body: new TabBarView(
                 children: tabList.map((TabData tabData) {
               if (tabData.type == 0) {
@@ -69,7 +73,7 @@ class _TabWidgetState extends State<TabWidget> {
                   child: new Text("Test"),
                 );
               } else {
-                return new TypeWidget(tabData.type);
+                return new TypeWidget(tabData);
               }
             }).toList()),
           )),
