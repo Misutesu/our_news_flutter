@@ -36,7 +36,7 @@ class New {
     var newsData = data['data']['news'];
     for (var newData in newsData) {
       var managerData = newData['manager'];
-      news.add(new New(
+      news.add(New(
           id: newData['id'],
           title: newData['title'],
           cover: newData['cover'],
@@ -46,7 +46,7 @@ class New {
           type: int.parse(newData['type']),
           collectionNum: newData['collection_num'],
           historyNum: newData['history_num'],
-          managerUser: new ManagerUser(
+          managerUser: ManagerUser(
               id: managerData['id'],
               nickName: managerData['nick_name'],
               sex: managerData['sex'],

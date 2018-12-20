@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:our_news_flutter/home.dart';
 import 'package:our_news_flutter/type.dart';
+import 'package:our_news_flutter/bean/new.dart';
 
 void main() => runApp(new TabWidget());
 
@@ -17,9 +18,7 @@ var temp = new TabData(type: 1, title: "");
 
 class TabWidget extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() {
-    return new _TabWidgetState();
-  }
+  State<StatefulWidget> createState() => _TabWidgetState();
 }
 
 class _TabWidgetState extends State<TabWidget> {
@@ -30,7 +29,7 @@ class _TabWidgetState extends State<TabWidget> {
   void initState() {
     super.initState();
 
-    themeData = new ThemeData(primaryColor: Colors.blue);
+    themeData = ThemeData(primaryColor: Colors.blue);
   }
 
   @override
@@ -38,42 +37,47 @@ class _TabWidgetState extends State<TabWidget> {
     return new MaterialApp(
       title: "OurNews",
       theme: themeData,
-      home: new DefaultTabController(
+      home: DefaultTabController(
           length: tabList.length,
-          child: new Scaffold(
-            appBar: new AppBar(
-              title: new Text(title),
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(title),
               actions: <Widget>[
-                new IconButton(
+                IconButton(
                   icon: const Icon(
                     Icons.search,
                     color: Colors.white,
                   ),
-                  tooltip: 'Search',
+                  tooltip: '搜索',
                   onPressed: null,
                 )
               ],
-              bottom: new TabBar(
+              bottom: TabBar(
                   isScrollable: true,
                   tabs: tabList.map((TabData tabData) {
-                    return new Tab(
+                    return Tab(
                       text: tabData.title,
                     );
                   }).toList()),
             ),
-            drawer: new Drawer(
-              child: null,
+            drawer: Drawer(
+              child: Center(
+                child: Text("Drawer"),
+              ),
               elevation: 6,
             ),
-            body: new TabBarView(
+            body: TabBarView(
                 children: tabList.map((TabData tabData) {
               if (tabData.type == 0) {
-                return new Padding(
+                return Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: new Text("Test"),
+                  child: Text("Test"),
                 );
               } else {
-                return new TypeWidget(tabData);
+                return TypeWidget(
+                  key: Key(tabData.type.toString()),
+                  tabData: tabData,
+                );
               }
             }).toList()),
           )),
@@ -86,4 +90,5 @@ class TabData {
 
   final int type;
   final String title;
+  final List<New> newList = [];
 }

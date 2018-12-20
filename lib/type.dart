@@ -6,50 +6,78 @@ import 'package:our_news_flutter/utils/dio_utils.dart';
 import 'package:our_news_flutter/api.dart';
 import 'package:our_news_flutter/bean/new.dart';
 
-TabData tabData;
+const int TYPE_LOAD = 0;
+const int TYPE_HINT = 1;
+const int TYPE_NORMAL = 2;
 
-final int size = 20;
-final int sort = 1;
-int page = 1;
-
-var isInit = false;
-List<New> newList = [];
+const int size = 20;
+const int sort = 1;
 
 class TypeWidget extends StatefulWidget {
-  TypeWidget(TabData tab) {
-    tabData = tab;
-  }
+  final TabData tabData;
+
+  const TypeWidget({Key key, this.tabData}) : super(key: key);
 
   @override
-  _TypeWidgetState createState() => _TypeWidgetState();
+  _TypeWidgetState createState() {
+    return _TypeWidgetState(tabData);
+  }
 }
 
 class _TypeWidgetState extends State<TypeWidget> {
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  int pageState = TYPE_LOAD;
+
+  TabData tabData;
+  int page = 1;
+
+  _TypeWidgetState(this.tabData);
+
+  @override
+  void initState() {
+    super.initState();
+    if (pageState == TYPE_LOAD) {
+      _loadData(true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (!isInit) {
-      Future.delayed(Duration(milliseconds: 500), () {
-        _refreshIndicatorKey.currentState.show();
-      });
+    switch (pageState) {
+      case TYPE_LOAD:
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      case TYPE_HINT:
+        return Center(
+          child: RaisedButton(
+            onPressed: () {
+              setState(() {
+                pageState = TYPE_LOAD;
+              });
+              _loadData(true);
+            },
+            color: Theme.of(context).primaryColor,
+            child: Text(
+              "重试",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
     }
     return new RefreshIndicator(
-        key: _refreshIndicatorKey,
         onRefresh: _onRefresh,
-        child: new ListView.builder(
-          physics: new AlwaysScrollableScrollPhysics(),
-          itemCount: newList.length,
+        child: ListView.builder(
+          physics: AlwaysScrollableScrollPhysics(),
+          itemCount: tabData.newList.length,
           itemBuilder: (BuildContext context, int position) {
-            New newBean = newList[position];
-            return new InkWell(
+            New newBean = tabData.newList[position];
+            return InkWell(
               onTap: null,
-              child: new Padding(
+              child: Padding(
                 padding: const EdgeInsets.all(8),
-                child: new Row(
+                child: Row(
                   children: <Widget>[
-                    new ClipRRect(
+                    ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: new CachedNetworkImage(
                         imageUrl: baseUrl + imgUrl + newBean.cover,
@@ -64,7 +92,21 @@ class _TypeWidgetState extends State<TypeWidget> {
                         ),
                       ),
                     ),
-                    new Text(newBean.title),
+                    Text(newBean.title),
+//                    Expanded(
+//                      child: Stack(
+//                        children: <Widget>[
+//                          Positioned(
+//                            top: 0,
+//                            child: Text(newBean.title),
+//                          ),
+//                          Positioned(
+//                            bottom: 0,
+//                            child: Text(newBean.createTime),
+//                          ),
+//                        ],
+//                      ),
+//                    )
                   ],
                 ),
               ),
@@ -75,11 +117,11 @@ class _TypeWidgetState extends State<TypeWidget> {
 
   Future<Null> _onRefresh() {
     page = 1;
-    return _loadData();
+    return _loadData(true);
   }
 
-  Future<Null> _loadData() async {
-    final Completer<Null> completer = new Completer<Null>();
+  Future<Null> _loadData(bool refresh) async {
+    final Completer<Null> completer = Completer<Null>();
     try {
       var response = await DioUtils.dio.get(getNewList, data: {
         'type': tabData.type,
@@ -87,17 +129,27 @@ class _TypeWidgetState extends State<TypeWidget> {
         'size': size,
         'sort': sort,
       });
-      newList.addAll(New.decodeData(response.data.toString()));
+      if (refresh) {
+        tabData.newList.clear();
+      }
+      tabData.newList.addAll(New.decodeData(response.data.toString()));
+      setState(() {
+        pageState = TYPE_NORMAL;
+      });
     } catch (e) {
-      print(e.toString());
+      print("LoadError:${e.toString()}");
       Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text("Load News Error"),
+        content: Text("Load News Error"),
       ));
+      if (refresh) {
+        tabData.newList.clear();
+      }
+      if (tabData.newList.isEmpty) {
+        setState(() {
+          pageState = TYPE_HINT;
+        });
+      }
     }
-
-    setState(() {
-      isInit = true;
-    });
 
     completer.complete(null);
     return completer.future;
